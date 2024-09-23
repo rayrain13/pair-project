@@ -9,6 +9,26 @@ public class ArithmeticProblemGenerator {
     private static final Random random = new Random();
     private static final int MAX_OPERATORS = 3;
 
+    public static void main(String[] args) {
+
+
+        if (args.length < 2) {
+            printHelp();
+            return;
+        }
+
+        if (args[0].equals("-n") && args[2].equals("-r")) {
+            int count = Integer.parseInt(args[1]);
+            int range = Integer.parseInt(args[3]);
+            generateProblems(count, range);
+        } else if (args[0].equals("-e") && args[2].equals("-a")) {
+            String exerciseFile = args[1];
+            String answerFile = args[3];
+            gradeExercises(exerciseFile, answerFile);
+        } else {
+            printHelp();
+        }
+    }
 
 
     static class Fraction {

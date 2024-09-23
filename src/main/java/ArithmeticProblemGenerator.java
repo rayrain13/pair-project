@@ -165,6 +165,113 @@ public class ArithmeticProblemGenerator {
             e.printStackTrace();
         }
     }
+    private static void gradeExercises(String exerciseFile, String answerFile) {
+        List<String> exercises = readFile(exerciseFile);
+        List<String> answers = readFile(answerFile);
+        List<Integer> correct = new ArrayList<>();
+        List<Integer> wrong = new ArrayList<>();
 
+        for (int i = 0; i < exercises.size(); i++) {
+            String exercise = exercises.get(i).substring(exercises.get(i).indexOf(" ") + 1);
+            String answer = answers.get(i).substring(answers.get(i).indexOf(" ") + 1);
 
+            if (evaluateExpression(exercise).equals(answer)) {
+                correct.add(i + 1);
+            } else {
+                wrong.add(i + 1);
+            }
+        }
+
+        writeGradeToFile(correct, wrong);
+    }
+
+    private static List<String> readFile(String filename) {
+        List<String> lines = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lines;
+    }
+
+    private static void writeGradeToFile(List<Integer> correct, List<Integer> wrong) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter("Grade.txt"))) {
+            writer.println("Correct: " + correct.size() + " " + correct);
+            writer.println("Wrong: " + wrong.size() + " " + wrong);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    private static Fraction evaluateExpression(String expression) {
+        expression = expression.replaceAll("\\s+", "");
+        return evalExpr(expression);
+    }
+
+    private static Fraction evalExpr(String expr) {
+        if (!expr.contains("(")) {
+            return parseFraction(expr);
+        }
+
+        int openParenIndex = expr.lastIndexOf('(');
+        int closeParenIndex = expr.indexOf(')', openParenIndex);
+        String subExpr = expr.substring(openParenIndex + 1, closeParenIndex);
+
+        Fraction result = evalSimpleExpr(subExpr);
+        String newExpr = expr.substring(0, openParenIndex) + result + expr.substring(closeParenIndex + 1);
+        return evalExpr(newExpr);
+    }
+
+    private static Fraction evalSimpleExpr(String expr) {
+        String[] tokens = expr.split("(?<=[-+×÷])|(?=[-+×÷])");
+        Fraction result = parseFraction(tokens[0]);
+
+        for (int i = 1; i < tokens.length; i += 2) {
+            char op = tokens[i].charAt(0);
+            Fraction operand = parseFraction(tokens[i + 1]);
+
+            switch (op) {
+                case '+':
+                    result = result.add(operand);
+                    break;
+                case '-':
+                    result = result.subtract(operand);
+                    break;
+                case '×':
+                    result = result.multiply(operand);
+                    break;
+                case '÷':
+                    result = result.divide(operand);
+                    break;
+            }
+        }
+
+        return result;
+    }
+
+    private static Fraction parseFraction(String s) {
+        if (s.contains("'")) {
+            String[] parts = s.split("'");
+            int whole = Integer.parseInt(parts[0]);
+            String[] fracParts = parts[1].split("/");
+            int num = Integer.parseInt(fracParts[0]);
+            int denom = Integer.parseInt(fracParts[1]);
+            return new Fraction(whole * denom + num, denom);
+        } else if (s.contains("/")) {
+            String[] parts = s.split("/");
+            return new Fraction(Integer.parseInt(parts[0]), Integer.parseInt(parts[1]));
+        } else {
+            return new Fraction(Integer.parseInt(s), 1);
+        }
+    }
+
+    private static void printHelp() {
+        System.out.println("Usage:");
+        System.out.println("Generate problems: java ArithmeticProblemGenerator -n <count> -r <range>");
+        System.out.println("Grade exercises: java ArithmeticProblemGenerator -e <exercisefile>.txt -a <answerfile>.txt");
+    }
 }
+

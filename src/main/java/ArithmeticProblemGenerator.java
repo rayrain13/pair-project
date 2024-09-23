@@ -137,5 +137,34 @@ public class ArithmeticProblemGenerator {
 
         return new Expression(result, expr);
     }
+    private static void generateProblems(int count, int range) {
+        Set<String> uniqueProblems = new HashSet<>();
+        List<String> problems = new ArrayList<>();
+        List<String> answers = new ArrayList<>();
+
+        while (problems.size() < count) {
+            Expression expr = generateExpression(range, MAX_OPERATORS);
+            String problem = expr.repr + " = ";
+
+            if (!uniqueProblems.contains(problem)) {
+                uniqueProblems.add(problem);
+                problems.add(problem);
+                answers.add(expr.value.toString());
+            }
+        }
+
+        writeToFile("Exercises.txt", problems);
+        writeToFile("Answers.txt", answers);
+    }
+    private static void writeToFile(String filename, List<String> lines) {
+        try (PrintWriter writer = new PrintWriter(new FileWriter(filename))) {
+            for (int i = 0; i < lines.size(); i++) {
+                writer.println((i + 1) + ". " + lines.get(i));
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
 }
